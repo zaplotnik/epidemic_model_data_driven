@@ -86,8 +86,8 @@ male_daily[:,1:N] = male_cumulative[:,1:] - male_cumulative[:,:-1]
 
 from scipy.optimize import curve_fit
 
-L_decay = False
-decay_slope = 0.1 # weekly decay
+L_decay = True
+decay_slope = 0.4 # weekly decay
 
 L_linear_trend = False
 
@@ -256,6 +256,15 @@ hosp_model = np.cumsum(hospitalised_in_avg-hospitalised_out_avg)[:N+fcs_length]
 deaths_model = np.cumsum(deaths_avg)[:N+fcs_length]
 deaths_daily_model = deaths_avg[:N+fcs_length]
 
+# data
+icu_data = data_stats["state.icu"].values
+hosp_data = data_stats["state.in_hospital"].values
+cum_deaths_data = data_stats["state.deceased.todate"].values
+
+nn= icu_data.shape[0] # length of data
+deaths_data = np.zeros(nn)
+deaths_data[1:] = cum_deaths_data[1:] - cum_deaths_data[:-1] # daily deaths data
+
 # predicted values: multiply forecasted values by the ratio of mean data values and mean predicted values within last 5 days
 icu_predict = icu_model*np.mean(icu_data[nn-5:nn])/np.mean(icu_model[nn-5:nn])
 hosp_predict = hosp_model*np.mean(hosp_data[nn-5:nn])/np.mean(hosp_model[nn-5:nn])
@@ -264,14 +273,6 @@ deaths_predict = deaths_model*np.mean(cum_deaths_data[nn-5:nn])/np.mean(deaths_m
 
 #%% compare to data
 import matplotlib.pyplot as plt
-
-icu_data = data_stats["state.icu"].values
-hosp_data = data_stats["state.in_hospital"].values
-cum_deaths_data = data_stats["state.deceased.todate"].values
-
-nn= icu_data.shape[0] # length of data
-deaths_data = np.zeros(nn)
-deaths_data[1:] = cum_deaths_data[1:] - cum_deaths_data[:-1] # daily deaths data
 
 # generate dates
 dates = [day0 + datetime.timedelta(days=i) for i in range(int(N+100))] 
