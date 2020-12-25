@@ -11,7 +11,7 @@ import pandas as pd
 import datetime
 
 # length of epidemic forecast in days from today
-fcs_length = 35
+fcs_length = 50
 
 # download data from Sledilnik
 data_stats = pd.read_csv(r"https://raw.githubusercontent.com/slo-covid-19/data/master/csv/stats.csv",\
@@ -87,7 +87,7 @@ male_daily[:,1:N] = male_cumulative[:,1:] - male_cumulative[:,:-1]
 from scipy.optimize import curve_fit
 
 L_decay = True
-decay_slope = 0.4 # weekly decay
+decay_slope = 0.1 # weekly decay
 
 L_linear_trend = False
 
@@ -342,7 +342,7 @@ plt.plot_date(dates[:N+fcs_length],hosp_predict,"b-",xdate=True,label="HOSP mode
 plt.plot_date(dates[:N+fcs_length],deaths_predict,"k-",xdate=True,label="deaths model")
 plt.plot_date(dates[:N+fcs_length],deaths_daily_model,"g-",xdate=True,label="daily deaths model")
 
-#plt.yscale("log")
+plt.yscale("log")
 plt.xticks(rotation=45)
 plt.grid()
 plt.grid(b=True, which='major', color='k', linestyle='-')
