@@ -11,7 +11,7 @@ import pandas as pd
 import datetime
 
 # length of epidemic forecast in days from today
-fcs_length = 50
+fcs_length = 21
 
 # download data from Sledilnik
 data_stats = pd.read_csv(r"https://raw.githubusercontent.com/slo-covid-19/data/master/csv/stats.csv",\
@@ -86,10 +86,10 @@ male_daily[:,1:N] = male_cumulative[:,1:] - male_cumulative[:,:-1]
 
 from scipy.optimize import curve_fit
 
-L_decay = True
+L_decay = False
 decay_slope = 0.1 # weekly decay
 
-L_linear_trend = False
+L_linear_trend = True
 
 L_average = False
 
@@ -115,7 +115,17 @@ elif L_average:
 
 # define linear trend (TBD)        
 elif L_linear_trend:
-    pass
+    # extrapolate females and males
+    for j in range(9):
+        kf,nf = np.polyfit(np.arange(0,14),female_daily[j,N-14:N],1)
+        km,nm = np.polyfit(np.arange(0,14),male_daily[j,N-14:N],1)
+        ii = 0
+        for i in range(N,N+fcs_length):
+            female_daily[j,i] = kf*ii + nf
+            male_daily[j,i] = km*ii+nm
+            ii += 1
+
+        
 
 # noone else gets infected
 else:
@@ -289,7 +299,7 @@ plt.plot_date(dates[:N+fcs_length],deaths_model[:N+fcs_length],"k-",xdate=True,l
 plt.plot_date(dates[:nn],deaths_data,"go",markersize=2,label="daily deaths data",xdate=True)
 plt.plot_date(dates[:N+fcs_length],deaths_avg[:N+fcs_length],"g-",xdate=True,label="daily deaths model")
 
-plt.yscale("log")
+#plt.yscale("log")
 plt.xticks(rotation=45)
 plt.grid()
 plt.grid(b=True, which='major', color='k', linestyle='-')
@@ -342,7 +352,7 @@ plt.plot_date(dates[:N+fcs_length],hosp_predict,"b-",xdate=True,label="HOSP mode
 plt.plot_date(dates[:N+fcs_length],deaths_predict,"k-",xdate=True,label="deaths model")
 plt.plot_date(dates[:N+fcs_length],deaths_daily_model,"g-",xdate=True,label="daily deaths model")
 
-plt.yscale("log")
+#plt.yscale("log")
 plt.xticks(rotation=45)
 plt.grid()
 plt.grid(b=True, which='major', color='k', linestyle='-')
@@ -350,6 +360,6 @@ plt.grid(b=True, which='minor', color='k', linestyle='--')
 plt.xlim([date.today()-datetime.timedelta(days=7),date.today()+datetime.timedelta(days=fcs_length-2)])
 
 plt.legend(ncol=2)
-plt.ylim([10,3000])
+plt.ylim([10,4000])
 
 
